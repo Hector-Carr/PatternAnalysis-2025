@@ -21,23 +21,23 @@ class SimpleUNet(nn.Module):
         self.dec3 = self._conv_block(256 + 128, 128, dropout_p)
         self.dec3 = self._conv_block(128 + 64, 64, dropout_p)
         self.dec2 = self._conv_block(64 + 32, 32, dropout_p)
-        self.dec1 = nn.Conv2d(32, out_channels, 1)
+        self.dec1 = nn.Conv3d(32, out_channels, 1)
 
-        self.pool = nn.MaxPool2d(2)
+        self.pool = nn.MaxPool3d(2)
         self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
         self.sigmoid = nn.Sigmoid()  # Sigmoid activation for final output
 
     def _conv_block(self, in_ch, out_ch, dropout_p=0.2):
         """Conv block with batch normalization and LeakyReLU: Conv -> BN -> LeakyReLU -> Dropout -> Conv -> BN -> LeakyReLU -> Dropout"""
         return nn.Sequential(
-            nn.Conv2d(in_ch, out_ch, 3, padding=1),
-            nn.BatchNorm2d(out_ch),
+            nn.Conv3d(in_ch, out_ch, 3, padding=1),
+            nn.BatchNorm3d(out_ch),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.Dropout2d(dropout_p),
-            nn.Conv2d(out_ch, out_ch, 3, padding=1),
-            nn.BatchNorm2d(out_ch),
+            nn.Dropout3d(dropout_p),
+            nn.Conv3d(out_ch, out_ch, 3, padding=1),
+            nn.BatchNorm3d(out_ch),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.Dropout2d(dropout_p)
+            nn.Dropout3d(dropout_p)
         )
 
     def forward(self, x):
