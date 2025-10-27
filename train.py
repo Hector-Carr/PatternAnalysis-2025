@@ -1,58 +1,106 @@
 import torch
-import torch.optim as optim
+import torch.nn as nn
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+import os
 
 from dataset import get_dataloaders 
 from modules import SimpleUNet, DiceLoss 
 
-def train(model, train_loader, test_dataset, epochs=3, lr=0.001, visualize_every=1):
-    model.to(device)
-    criterion = DiceLoss()
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+def train(
+    model,
+    train_loader: DataLoader,
+    val_loader: DataLoader = None,
+    num_epochs: int = 50,
+    lr: float = 1e-4,
+    device: str = "cuda",
+    save_path: str = "unet3d_checkpoint.pt",
+    criterion=None,
+    optimizer=None,
+):
+    """
+    Generic training loop for a 3D U-Net model.
+    
+    Args:
+        model: 3D U-Net model (nn.Module)
+        train_loader: DataLoader for training set
+        val_loader: optional DataLoader for validation set
+        num_epochs: number of epochs to train
+        lr: learning rate
+        device: 'cuda' or 'cpu'
+        save_path: path to save best model checkpoint
+        criterion: loss function (default: BCEWithLogitsLoss)
+        optimizer: optimizer (default: Adam)
+    """
 
-    losses = []
+    # Defaults
+    if criterion is None:
+        criterion = nn.BCEWithLogitsLoss()  # good for segmentation
+    if optimizer is None:
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
-    print(" Starting training with Batch Norm, LeakyReLU, and Sigmoid activation...")
-    for epoch in range(epochs):
+    model = model.to(device)
+    best_val_loss = float("inf")
+
+    for epoch in range(num_epochs):
+        print(f"\nEpoch [{epoch+1}/{num_epochs}]")
+
+        # --- Training ---
         model.train()
-        epoch_loss = 0
+        train_loss = 0.0
 
-        # Training loop with progress
-        for batch_idx, (images, masks) in enumerate(train_loader):
-            images, masks = images.to(device), masks.to(device)
+        for inputs, targets in tqdm(train_loader, desc="Training", leave=False):
+            inputs, targets = inputs.to(device), targets.to(device)
 
             optimizer.zero_grad()
-            outputs = model(images)
-
-            pred_pet = outputs[:, 0]  # Pet class probability from sigmoid
-            #print the shape of pred_pet and masks for debugging
-            # print(f"pred_pet shape: {outputs.shape}, masks shape: {masks.shape}")
-            loss = criterion(pred_pet, masks)
-
-            # Backward pass
+            outputs = model(inputs)
+            loss = criterion(outputs, targets)
             loss.backward()
             optimizer.step()
 
-            epoch_loss += loss.item()
+            train_loss += loss.item() * inputs.size(0)
 
-        avg_loss = epoch_loss / len(train_loader)
-        losses.append(avg_loss)
-        print(f"📈 Epoch {epoch+1}/{epochs} Complete: Avg Loss = {avg_loss:.4f}")
+        train_loss /= len(train_loader.dataset)
+        print(f"Train Loss: {train_loss:.4f}")
 
-        # Visualize predictions after each epoch (or every few epochs)
-        if (epoch) % visualize_every == 0:
-            show_epoch_predictions(model, test_dataset, epoch + 1, n=3)
+        # --- Validation (optional) ---
+        if val_loader is not None:
+            model.eval()
+            val_loss = 0.0
+            with torch.no_grad():
+                for inputs, targets in tqdm(val_loader, desc="Validation", leave=False):
+                    inputs, targets = inputs.to(device), targets.to(device)
+                    outputs = model(inputs)
+                    loss = criterion(outputs, targets)
+                    val_loss += loss.item() * inputs.size(0)
 
-    print(" Training complete with enhanced U-Net!")
-    return losses
+            val_loss /= len(val_loader.dataset)
+            print(f"Val Loss:   {val_loss:.4f}")
+
+            # Save best model
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                torch.save(model.state_dict(), save_path)
+                print(f"✅ Saved new best model to {save_path}")
+        else:
+            # Save last model if no validation
+            torch.save(model.state_dict(), save_path)
+
+    print("\nTraining complete.")
 
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    train_loader, test_loader = get_dataloaders()
+    train_loader, val_loader = get_dataloaders()
+    model = SimpleUNet(in_channels=1, out_channels=6, dropout_p=0.2)
 
-    #for img, lab in test_dataloader:
-    #    print(len(img))
-    
-    #exit()
-    model = SimpleUNet(in_channels=1, out_channels=3, dropout_p=0.2)
-    losses = train(model, train_loader, test_loader, epochs=3, lr=0.001, visualize_every=50)
+    losses = train(
+        model, 
+        train_loader, 
+        val_loader, 
+        num_epochs=2,
+        lr=0.001,
+        device=device,
+        criterion=DiceLoss(),
+        save_path="testing.pt"
+    )
