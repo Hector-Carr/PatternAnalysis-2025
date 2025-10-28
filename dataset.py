@@ -16,10 +16,10 @@ BATCH_SIZE = 1
 class HipMRI_Dataset(Dataset):
     def __init__(self, MRs, labels, transfrom=None):
         assert len(MRs) == len(labels), "Number of images and labels must match"
-        self.image_paths = MRs
-        self.label_paths = labels
-        #self.images = load_data_3D(MRs)
-        #self.labels = load_data_3D(labels, dtype=np.uint8)
+        #self.image_paths = MRs
+        #self.label_paths = labels
+        self.images = load_data_3D(MRs)
+        self.labels = load_data_3D(labels, dtype=np.uint8)
         self.transform = transfrom
 
     def __len__(self):
@@ -32,10 +32,10 @@ class HipMRI_Dataset(Dataset):
         lbl_path = self.label_paths[idx]
 
         # Example: using nibabel (for .nii/.nii.gz)
-        image = nib.load(img_path).get_fdata().astype(np.float32)
-        label = nib.load(lbl_path).get_fdata().astype(np.float32)
-        #image = self.images[idx]
-        #label = self.labels[idx]
+        #image = nib.load(img_path).get_fdata().astype(np.float32)
+        #label = nib.load(lbl_path).get_fdata().astype(np.float32)
+        image = self.images[idx]
+        label = self.labels[idx]
 
         # --- Ensure correct shapes ---
         # Input: [D, H, W] → [1, D, H, W]
