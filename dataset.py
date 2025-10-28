@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 import os
@@ -14,22 +15,22 @@ LAB_PATH = "data/semantic_labels_anon/"
 BATCH_SIZE = 1
 
 class HipMRI_Dataset(Dataset):
-    def __init__(self, MRs, labels, transfrom=None):
+    def __init__(self, MRs, labels, transform=None):
         assert len(MRs) == len(labels), "Number of images and labels must match"
         #self.image_paths = MRs
         #self.label_paths = labels
-        self.images = load_data_3D(MRs)
+        self.images = load_data_3D(MRs, normImage=True)
         self.labels = load_data_3D(labels, dtype=np.uint8)
-        self.transform = transfrom
+        self.transform = transform
 
     def __len__(self):
-        return len(self.image_paths)
-        #return len(self.images)
+        #return len(self.image_paths)
+        return len(self.images)
 
     def __getitem__(self, idx):
         # --- Load image ---
-        img_path = self.image_paths[idx]
-        lbl_path = self.label_paths[idx]
+        #img_path = self.image_paths[idx]
+        #lbl_path = self.label_paths[idx]
 
         # Example: using nibabel (for .nii/.nii.gz)
         #image = nib.load(img_path).get_fdata().astype(np.float32)
@@ -48,8 +49,8 @@ class HipMRI_Dataset(Dataset):
         label_onehot = label_onehot.permute(3, 0, 1, 2).float()    # [6, D, H, W]
 
         # --- Apply transforms (if any) ---
-        if self.transform:
-            image, label_onehot = self.transform(image, label_onehot)
+        #if self.transform:
+        #    image = self.transform(image)
 
         # --- Convert to tensors ---
         image = torch.from_numpy(image).float()     # [1, D, H, W]
@@ -59,8 +60,8 @@ class HipMRI_Dataset(Dataset):
 # function to automatically split data into test and train dataloaders
 def get_dataloaders():
     # load files availble
-    MRs = [MR_PATH+f for f in os.listdir(MR_PATH)][:10]
-    labels = [LAB_PATH+f for f in os.listdir(LAB_PATH)][:10]
+    MRs = [MR_PATH+f for f in os.listdir(MR_PATH)]
+    labels = [LAB_PATH+f for f in os.listdir(LAB_PATH)]
 
     # basic check for files
     if len(MRs) != len(labels):
@@ -77,9 +78,9 @@ def get_dataloaders():
     )
     
     # load datasets
-    train_dataset = HipMRI_Dataset(X_train, y_train)
+    train_dataset = HipMRI_Dataset(X_train, y_train)#, transform=transforms.ToTensor())
     #test_dataset = HipMRI_Dataset(X_test, y_test)
-    val_dataset = HipMRI_Dataset(X_val, y_val)
+    val_dataset = HipMRI_Dataset(X_val, y_val)#, transform=transforms.ToTensor())
 
     # put datasets into dataloaders 
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)

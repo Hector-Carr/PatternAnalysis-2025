@@ -98,7 +98,7 @@ if __name__ == "__main__":
         model, 
         train_loader, 
         val_loader, 
-        num_epochs=2,
+        num_epochs=1,
         lr=0.001,
         device=device,
         criterion=DiceLoss(),
