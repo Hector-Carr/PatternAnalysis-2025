@@ -12,29 +12,29 @@ class SimpleUNet(nn.Module):
         super().__init__()
 
         # Encoder (downsampling)
-        self.enc1 = self._conv_block(in_channels, 16, dropout_p)
-        self.enc2 = self._conv_block(16, 32, dropout_p)
-        self.enc3 = self._conv_block(32, 64, dropout_p)
-        self.enc4 = self._conv_block(64, 128, dropout_p)
+        self.enc1 = self._conv_block(in_channels, 8, 16, dropout_p)
+        self.enc2 = self._conv_block(16, 32, 64, dropout_p)
+        self.enc3 = self._conv_block(64, 128, 256, dropout_p)
+        self.enc4 = self._conv_block(256, 256, 512, dropout_p)
 
         # Decoder (upsampling)
-        self.dec4 = self._conv_block(128 + 64, 64, dropout_p)
-        self.dec3 = self._conv_block(64 + 32, 32, dropout_p)
-        self.dec2 = self._conv_block(32 + 16, 16, dropout_p)
-        self.dec1 = nn.Conv3d(16, out_channels, 1)
+        self.dec4 = self._conv_block(512 + 256, 256, 256, dropout_p)
+        self.dec3 = self._conv_block(256 + 64, 128, 64, dropout_p)
+        self.dec2 = self._conv_block(64 + 16, 32, 32, dropout_p)
+        self.dec1 = nn.Conv3d(32, out_channels, 1)
 
         self.pool = nn.MaxPool3d(2)
         self.upsample = nn.Upsample(scale_factor=2, mode='trilinear', align_corners=True)
         self.sigmoid = nn.Sigmoid()  # Sigmoid activation for final output
 
-    def _conv_block(self, in_ch, out_ch, dropout_p=0.2):
+    def _conv_block(self, in_ch, mid_ch, out_ch, dropout_p=0.2):
         """Conv block with batch normalization and LeakyReLU: Conv -> BN -> LeakyReLU -> Dropout -> Conv -> BN -> LeakyReLU -> Dropout"""
         return nn.Sequential(
-            nn.Conv3d(in_ch, out_ch, 3, padding=1),
-            nn.BatchNorm3d(out_ch),
+            nn.Conv3d(in_ch, mid_ch, 3, padding=1),
+            nn.BatchNorm3d(mid_ch),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Dropout3d(dropout_p),
-            nn.Conv3d(out_ch, out_ch, 3, padding=1),
+            nn.Conv3d(mid_ch, out_ch, 3, padding=1),
             nn.BatchNorm3d(out_ch),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Dropout3d(dropout_p)
