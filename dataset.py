@@ -47,6 +47,7 @@ class HipMRI_Dataset(Dataset):
         label_tensor = torch.from_numpy(label).long()              # [D, H, W]
         label_onehot = F.one_hot(label_tensor, num_classes=6)  # [D, H, W, 6]
         label_onehot = label_onehot.permute(3, 0, 1, 2).float()    # [6, D, H, W]
+        #label_onehot = label_onehot[1:] # [5, D, H, W] remove background
 
         # --- Apply transforms (if any) ---
         #if self.transform:
