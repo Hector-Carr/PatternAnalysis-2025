@@ -58,45 +58,47 @@ class SimpleUNet(nn.Module):
 
         return out
 
-class DiceLoss(nn.Module):
-    def __init__(self, smooth=1e-6, ignore_index=None):
-        """
-        Multi-class Dice Loss for 3D segmentation (one-hot targets).
 
+class DiceLoss(nn.Module):
+    def __init__(self, weight=None, dice_weight=0.5, ce_weight=0.5, smooth=1e-5):
+        """
         Args:
-            smooth (float): Smoothing term to prevent division by zero.
-            ignore_index (int, optional): Channel index to ignore (e.g. background).
+            weight (Tensor, optional): Class weights for CrossEntropyLoss.
+            dice_weight (float): Weight of Dice loss component.
+            ce_weight (float): Weight of Cross-Entropy loss component.
+            smooth (float): Smoothing term to avoid division by zero.
         """
         super(DiceLoss, self).__init__()
+        #self.dice_weight = dice_weight
+        #self.ce_weight = ce_weight
         self.smooth = smooth
-        self.ignore_index = ignore_index
+        #self.ce_loss = nn.CrossEntropyLoss(weight=weight)
 
-    def forward(self, logits, targets):
+    def forward(self, pred, target):
         """
+        Computes per-class and mean Dice coefficients for multi-class segmentation.
+
         Args:
-            logits: Tensor of shape (N, C, D, H, W) — raw network outputs.
-            targets: Tensor of shape (N, C, D, H, W) — one-hot encoded ground truth.
+            pred (torch.Tensor): Predicted tensor of shape (N, C, ...) with probabilities or logits.
+            target (torch.Tensor): Ground truth tensor of shape (N, ...) with class indices.
+            epsilon (float): Small constant for numerical stability.
+
         Returns:
-            dice_loss (float): Mean dice loss over classes.
+            dice_per_class (torch.Tensor): Dice score for each class (C,).
+            mean_dice (torch.Tensor): Mean Dice score across classes.
         """
-        probs = F.softmax(logits, dim=1)  # Convert logits to probabilities
+        #num_classes = pred.max().item() + 1 if pred.ndim == target.ndim else pred.shape[1]
+        num_classes = target.size(1)
+        print(target.shape)
 
-        if self.ignore_index is not None:
-            mask = torch.ones_like(targets, dtype=torch.bool)
-            mask[:, self.ignore_index] = False
-            probs = probs * mask
-            targets = targets * mask
+        # Flatten batch and spatial dimensions
+        pred_flat = pred.reshape(-1, num_classes)
+        target_flat = target.reshape(-1, num_classes)
 
-        # Compute per-class Dice
-        dims = (0, 2, 3, 4)
-        intersection = torch.sum(probs * targets, dims)
-        cardinality = torch.sum(probs + targets, dims)
-        dice_score = (2. * intersection + self.smooth) / (cardinality + self.smooth)
+        intersection = (pred_flat * target_flat).sum(dim=0)
+        union = pred_flat.sum(dim=0) + target_flat.sum(dim=0)
 
-        if self.ignore_index is not None:
-            valid_classes = torch.ones(dice_score.shape[0], device=logits.device, dtype=torch.bool)
-            valid_classes[self.ignore_index] = False
-            dice_score = dice_score[valid_classes]
+        dice_per_class = (2.0 * intersection + self.smooth) / (union + self.smooth)
+        dice = dice_per_class.mean()
 
-        # Dice loss = 1 - mean dice coefficient
-        return 1 - dice_score.mean()
+        return 1 - dice
