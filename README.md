@@ -18,3 +18,5 @@ In the recognition folder, you will find many recognition problems solved includ
 * transformers
 etc.
 
+![Graph of results](images/train_vs_val_loss.png)
+
