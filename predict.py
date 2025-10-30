@@ -5,7 +5,7 @@ from tqdm import tqdm
 from dataset import get_dataloaders 
 from modules import SimpleUNet, DiceLoss
 
-def test_3d_unet(
+def test(
     model,
     test_loader,
     checkpoint_path: str,
