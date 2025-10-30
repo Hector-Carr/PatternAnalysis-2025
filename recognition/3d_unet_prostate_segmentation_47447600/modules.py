@@ -86,7 +86,7 @@ class DiceLoss(nn.Module):
         """
         return 1 - self._dice(pred, target)
 
-    def _dice(self, pred, target, per_class=False)
+    def _dice(self, pred, target, per_class=False):
         num_classes = target.size(1)
 
         # Flatten batch and spatial dimensions
