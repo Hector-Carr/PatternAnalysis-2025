@@ -7,25 +7,29 @@ This algorithum aims to automatically annotate scans of pelvises to segment feat
 This basic strucure was modified due to the data set being used having fewer input channels and a larger resolution. The final structure of the implimented unet can be seen below
 ![Implimented network graph](images/Network_graph_implimented.png)\
 where:\
-(->): convolution layers\
+(->): convolution layers with BN, Leaky Relu and dropout\
+(->): last one is just regular convolution
 (==>): skip connections\
-(\/): downsampling\
+(\/): Max Pooling\
 (^): upsampling\
 (n): numer of channels\
+
+### reproducing results
+
 
 ## Dependancies
 
 ## Data
-There was minimal preprocessing of the data the main preprocessing was normalising the scan images and one hot encoding of the label images. The original format of the scan annotatins was/
-5: prostate/
-4: anal cavity/
-3: bladder/
-2: bone/
-1: miscilanious tissue/
-0: background/
-So this data was one-hot encoded for the final algorithum./
+There was minimal preprocessing of the data the main preprocessing was normalising the scan images and one hot encoding of the label images. The original format of the scan annotatins was\
+5: prostate\
+4: anal cavity\
+3: bladder\
+2: bone\
+1: miscilanious tissue\
+0: background\
+So this data was one-hot encoded for the final algorithum.
 
-The train-test-valitation split was 80% training and validation with 20% testing, with a further 90%-10% training-validation split, so a 72-8-20 train-validation-test split. This was chosen to maximise the ammount of trainign data, as the dataset has relitively few samples./
+The train-test-valitation split was 80% training and validation with 20% testing, with a further 90%-10% training-validation split, so a 72-8-20 train-validation-test split. This was chosen to maximise the ammount of trainign data, as the dataset has relitively few samples.
 
 Another noteable action of preprocessing was the removal of case 19, this was done because of a data resolution mismatch, and given that it was the only case with this issue it was chosen to remove it rather than resize it. To reproduce the results this traning it should be removed. In the case that data is being downloaded from [2] then the command below should be run in the PatternAnalysis-2025/recognition/3d_unet_prostate_segmentation_47447600/data/ directory
 ```sh

@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+import numpy as np
+import matplotlib.pyplot as plt
 
 from dataset import get_dataloaders 
 from modules import SimpleUNet, DiceLoss
@@ -33,6 +35,7 @@ def test(
 
     total_dice = 0.0
     all_dice = []
+    all_class_dice = []
     num_batches = 0
 
     with torch.no_grad():
@@ -40,9 +43,12 @@ def test(
             inputs, targets = inputs.to(device), targets.to(device)
 
             outputs = model(inputs)
-            loss, per_class_loss = criterion._dice(outputs, targets, per_class=True)
-            total_dice += loss
-            all_dice.append(loss.item())
+            dice, per_class_dice = criterion._dice(outputs, targets, per_class=True)
+            total_dice += dice
+            all_dice.append(dice)
+            all_class_dice += list(per_class_dice)
+
+            plot_images(inputs, preds, targets, num_batches, dice)
 
             num_batches += inputs.size(0)
 
@@ -50,9 +56,40 @@ def test(
 
     print(f"\nTest Dice Coeficient: {avg_dice:.4f}")
     print(f"\nAll Dice Coeficients: {all_dice}")
-    print(f"\nMin Dice Coeficient in any class: {min(all_dice)}")
+    print(f"\nMin Dice Coeficient: {min(all_dice)}")
+    print(f"\nMin Dice Coeficient in any class: {min(all_class_dice)}")
 
-    return avg_dice, all_dice
+    return avg_dice, all_dice, all_class_dice
+
+def plot_images(inputs, preds, targets, batch, dice)
+    # only plot if batch size is one
+    if inputs.size(0) != 1:
+        return
+
+    # Create figure
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4))
+    
+    # find index to plot over
+    i = len(inputs[0])//2
+
+    # plot input
+    axes[0].imshow(inputs[0][i].cpu().numpy(), cmap="inferno")
+    axes[0].axis('off')
+
+    # plot target
+    axes[1].imshow(np.argmax(targets[0])[i].cpu().numpy(), cmap="inferno")
+    axes[1].axis('off')
+
+    # plot prediction
+    axes[2].imshow(np.argmax(preds[0], 0)[i].cpu().numpy(), cmap="inferno")
+    axes[2].axis('off')
+
+    plt.tight_layout()
+    plt.set_title(f"Test {batch}, dice coeficient={dice}")
+
+    # Save the figure to file
+    plt.savefig(f"comparison_{batch}_d{dice}.png", dpi=300, bbox_inches='tight')
+    plt.close(fig)  # Close the figure to free memory
 
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -60,7 +97,7 @@ if __name__ == "__main__":
     test_loader = get_dataloaders(test=True)
     model = SimpleUNet(in_channels=1, out_channels=6, dropout_p=0.2)
 
-    losses = test(
+    test(
         model,
         test_loader,
         checkpoint_path="model.pt",
