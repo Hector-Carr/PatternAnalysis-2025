@@ -89,7 +89,6 @@ class DiceLoss(nn.Module):
         """
         #num_classes = pred.max().item() + 1 if pred.ndim == target.ndim else pred.shape[1]
         num_classes = target.size(1)
-        print(target.shape)
 
         # Flatten batch and spatial dimensions
         pred_flat = pred.reshape(-1, num_classes)
