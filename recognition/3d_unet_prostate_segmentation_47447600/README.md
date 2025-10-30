@@ -5,13 +5,13 @@ This algorithum aims to automatically annotate scans of pelvises to segment feat
 ![Source graph](images/foo)
 
 This basic strucure was modified due to the data set being used having fewer input channels and a larger resolution. The final structure of the implimented unet can be seen below
-![Implimented network graph](images/Network_graph_implimented.png)
-\nwhere:
-\n(->): convolution layers
-\n(==>): skip connections
-\n(\/): downsampling
-\n(^): upsampling
-\n(n): numer of channels
+![Implimented network graph](images/Network_graph_implimented.png)\
+where:\
+(->): convolution layers\
+(==>): skip connections\
+(\/): downsampling\
+(^): upsampling\
+(n): numer of channels\
 
 
 ## Results
