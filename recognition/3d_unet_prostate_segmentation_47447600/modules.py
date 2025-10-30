@@ -69,10 +69,7 @@ class DiceLoss(nn.Module):
             smooth (float): Smoothing term to avoid division by zero.
         """
         super(DiceLoss, self).__init__()
-        #self.dice_weight = dice_weight
-        #self.ce_weight = ce_weight
         self.smooth = smooth
-        #self.ce_loss = nn.CrossEntropyLoss(weight=weight)
 
     def forward(self, pred, target):
         """
@@ -87,7 +84,9 @@ class DiceLoss(nn.Module):
             dice_per_class (torch.Tensor): Dice score for each class (C,).
             mean_dice (torch.Tensor): Mean Dice score across classes.
         """
-        #num_classes = pred.max().item() + 1 if pred.ndim == target.ndim else pred.shape[1]
+        return 1 - self._dice(pred, target)
+
+    def _dice(self, pred, target, per_class=False)
         num_classes = target.size(1)
 
         # Flatten batch and spatial dimensions
@@ -100,4 +99,8 @@ class DiceLoss(nn.Module):
         dice_per_class = (2.0 * intersection + self.smooth) / (union + self.smooth)
         dice = dice_per_class.mean()
 
-        return 1 - dice
+        if per_class:
+            return dice, dice_per_class
+        
+        else:
+            return dice

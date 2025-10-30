@@ -91,7 +91,7 @@ def train(
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    train_loader, val_loader = get_dataloaders()
+    train_loader, val_loader = get_dataloaders(train_val=True)
     model = SimpleUNet(in_channels=1, out_channels=6, dropout_p=0.2)
 
     losses = train(
@@ -102,5 +102,5 @@ if __name__ == "__main__":
         lr=0.001,
         device=device,
         criterion=DiceLoss(),
-        save_path="testing.pt"
+        save_path="model.pt"
     )
