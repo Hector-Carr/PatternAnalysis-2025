@@ -79,20 +79,20 @@ def get_dataloaders():
     )
     
     # load datasets
-    train_dataset = HipMRI_Dataset(X_train, y_train)#, transform=transforms.ToTensor())
-    #test_dataset = HipMRI_Dataset(X_test, y_test)
-    val_dataset = HipMRI_Dataset(X_val, y_val)#, transform=transforms.ToTensor())
+    #train_dataset = HipMRI_Dataset(X_train, y_train)#, transform=transforms.ToTensor())
+    test_dataset = HipMRI_Dataset(X_test, y_test)
+    #val_dataset = HipMRI_Dataset(X_val, y_val)#, transform=transforms.ToTensor())
 
     # put datasets into dataloaders 
-    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-    #test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
-    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)
+    #train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
+    #val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
-    return (
-        train_loader,
+    return test_loader#(
+        #train_loader,
         #test_loader,
-        val_loader
-    )
+        #val_loader
+    #)
 
 if __name__ == "__main__":
     #a = load_data_3D(["data/semantic_labels_anon/Case_042_Week0_SEMANTIC_LFOV.nii.gz"], dtype=np.uint8)
