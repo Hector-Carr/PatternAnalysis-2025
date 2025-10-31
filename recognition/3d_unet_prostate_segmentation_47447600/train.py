@@ -5,7 +5,7 @@ from tqdm import tqdm
 import os
 
 from dataset import get_dataloaders 
-from modules import SimpleUNet, DiceLoss 
+from modules import SimpleUNet, DiceCELoss 
 
 def train(
     model,
@@ -101,6 +101,6 @@ if __name__ == "__main__":
         num_epochs=30,
         lr=0.001,
         device=device,
-        criterion=DiceLoss(),
+        criterion=DiceCELoss(),
         save_path="model.pt"
     )

@@ -59,7 +59,7 @@ class SimpleUNet(nn.Module):
         return out
 
 
-class DiceLoss(nn.Module):
+class DiceCELoss(nn.Module):
     def __init__(self, weight=None, dice_weight=0.5, ce_weight=0.5, smooth=1e-5):
         """
         Args:
@@ -68,7 +68,10 @@ class DiceLoss(nn.Module):
             ce_weight (float): Weight of Cross-Entropy loss component.
             smooth (float): Smoothing term to avoid division by zero.
         """
-        super(DiceLoss, self).__init__()
+        super(DiceCELoss, self).__init__()
+        self.weight = weight
+        self.dice_weight = dice_weight
+        self.ce_weight = ce_weight
         self.smooth = smooth
 
     def forward(self, pred, target):
@@ -84,7 +87,15 @@ class DiceLoss(nn.Module):
             dice_per_class (torch.Tensor): Dice score for each class (C,).
             mean_dice (torch.Tensor): Mean Dice score across classes.
         """
-        return 1 - self._dice(pred, target)
+        # Cross entropy loss
+        ce_loss = F.cross_entropy(pred, targets, weight=self.weight)
+
+        # dice score
+        dice = self._dice(pred, targets)
+
+        # Combine losses
+        total_loss = self.dice_weight * (1 - dice) + self.ce_weight * ce_loss
+        return total_loss
 
     def _dice(self, pred, target, per_class=False):
         num_classes = target.size(1)
@@ -104,3 +115,5 @@ class DiceLoss(nn.Module):
         
         else:
             return dice
+        
+
