@@ -99,23 +99,3 @@ class DiceCELoss(nn.Module):
         total_loss = self.dice_weight * (1 - dice) + self.ce_weight * ce_loss
         return total_loss
 
-    #def _dice(self, pred, target, per_class=False):
-        #num_classes = target.size(1)
-
-        # Flatten batch and spatial dimensions
-        #pred_flat = pred.reshape(-1, num_classes)
-        #target_flat = target.reshape(-1, num_classes)
-
-        #intersection = (pred_flat * target_flat).sum(dim=0)
-        #union = pred_flat.sum(dim=0) + target_flat.sum(dim=0)
-
-        #dice_per_class = (2.0 * intersection + self.smooth) / (union + self.smooth)
-        #dice = dice_per_class.mean()
-
-        #if per_class:
-        #    return dice, dice_per_class
-        
-        #else:
-        #    return dice
-        
-
