@@ -12,12 +12,36 @@ where:\
 (==>): skip connections\
 (\/): Max Pooling\
 (^): upsampling\
-(n): numer of channels\
+(n): numer of channels
 
 ### reproducing results
+To reproduce similar results, you will need to have a machine to train this model and the data to train it. The data can either be retireved on the uq gpu cluster or from [2]. After that there is some preporcessing that the user must compleate. That is documented in the Data section of this readme. Other than that a python environment with all the various dependancies is required.\
+
+After the setup is compleated train.py can be run to train a model and predict.py can be run to test the model and print out various statisticts
+
+## Results
+The results of the training of the algorithm were unfortunately unsuccessfull. This is because of a faulty loss function that seemed to indicate that the model was successfully training. This fault was only discovered when visualisations of the results were being created, without time to train new models fully, or test variations on hyper perameters. Below can be seen the resutls of training a model with an experimental dice-ce loss only trained for xxxxxxxxxxxxxxxx epochs, with an average test dice coeficient of xxxxxxxxxxxxx, far from the expectation.
+![Graph of good results](images/res_good.png)
+![Graph of mid results](images/res_mid.png)
+![Graph of bad results](images/res_bad.png)
+
+From this it can be seen that the has been able to compleate basic segmentation of the major background and tissue areas, however it lacks the ability to properly segment 4 of the classes. It is unknown whether the model needed more time to train or whether the experemental loss function is inapropriate, more testing would be necesarry.
+
+Below can be seen the loss-validations curves of the model that was trained to find these images
+![Graph of loss val](images/train_vs_val_loss.png)
 
 
 ## Dependancies
+The packages used to run this code are as follows,
+- torch 2.8.0+cu126
+- torchvision 0.23.0+cu126
+- torchmetrics 1.8.2
+- numpy 2.3.3
+- nibabel 5.3.2
+- tdqm 4.67.1
+- scikit-learn 1.7.2
+- matplotlib 3.10.7 
+Difering versions could be especially versions >= version used. Additionally these packages themselves have dependencies.
 
 ## Data
 There was minimal preprocessing of the data the main preprocessing was normalising the scan images and one hot encoding of the label images. The original format of the scan annotatins was\
@@ -40,11 +64,6 @@ If the data on rangpur is being used it is recomended to copy the data into the 
 cp -r /home/groups/comp3710/HipMRI_study_open/semantic_MRs /home/groups/comp3710/HipMRI_study_open/semantic_labels_only .
 rm semantic_MRs/K019* semantic_labels_only/K019*
 ```
-
-
-## Results
-![Graph of results](images/train_vs_val_loss.png)
-
 
 ## References
 1. O. Cicek, A. Abdulkadir, S. S. Lienkamp, T. Brox, and O. Ronneberger, “3D U-Net: Learning Dense Volumetric Segmentation from Sparse Annotation,” in Medical Image Computing and Computer-Assisted Intervention – MICCAI 2016, ser. Lecture Notes in Computer Science, S. Ourselin, L. Joskowicz, M. R. Sabuncu, G. Unal, and W. Wells, Eds. Cham: Springer International Publishing, 2016, pp. 424–432.
