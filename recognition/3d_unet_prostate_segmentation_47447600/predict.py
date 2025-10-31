@@ -48,7 +48,7 @@ def test(
             all_dice.append(dice)
             all_class_dice += list(per_class_dice)
 
-            plot_images(inputs, preds, targets, num_batches, dice)
+            plot_images(inputs, outputs, targets, num_batches, dice)
 
             num_batches += inputs.size(0)
 
@@ -61,7 +61,7 @@ def test(
 
     return avg_dice, all_dice, all_class_dice
 
-def plot_images(inputs, preds, targets, batch, dice)
+def plot_images(inputs, preds, targets, batch, dice):
     # only plot if batch size is one
     if inputs.size(0) != 1:
         return
@@ -73,22 +73,22 @@ def plot_images(inputs, preds, targets, batch, dice)
     i = len(inputs[0])//2
 
     # plot input
-    axes[0].imshow(inputs[0][i].cpu().numpy(), cmap="inferno")
+    axes[0].imshow(inputs[0][0][i].cpu().numpy(), cmap="inferno")
     axes[0].axis('off')
 
     # plot target
-    axes[1].imshow(np.argmax(targets[0])[i].cpu().numpy(), cmap="inferno")
+    axes[1].imshow(torch.argmax(targets[0], 0)[i].cpu().numpy(), cmap="inferno")
     axes[1].axis('off')
 
     # plot prediction
-    axes[2].imshow(np.argmax(preds[0], 0)[i].cpu().numpy(), cmap="inferno")
+    axes[2].imshow(torch.argmax(preds[0], 0)[i].cpu().numpy(), cmap="inferno")
     axes[2].axis('off')
 
     plt.tight_layout()
-    plt.set_title(f"Test {batch}, dice coeficient={dice}")
+    plt.title(f"Test {batch}, dice coeficient={dice}")
 
     # Save the figure to file
-    plt.savefig(f"comparison_{batch}_d{dice}.png", dpi=300, bbox_inches='tight')
+    plt.savefig(f"images/comparison_{batch}_d{dice}.png", dpi=300, bbox_inches='tight')
     plt.close(fig)  # Close the figure to free memory
 
 if __name__ == "__main__":
