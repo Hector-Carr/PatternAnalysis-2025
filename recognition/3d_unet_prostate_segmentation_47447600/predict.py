@@ -72,18 +72,20 @@ def plot_images(inputs, preds, targets, batch, dice):
     fig, axes = plt.subplots(1, 3, figsize=(12, 4))
     
     # find index to plot over
-    i = len(inputs[0])//2
+    i = inputs[0].size(-1)//2
 
     # plot input
-    axes[0].imshow(inputs[0][i].cpu().numpy(), cmap="inferno")
+    axes[0].imshow(inputs[0][:,:,i].cpu().numpy(), cmap="inferno")
     axes[0].axis('off')
 
     # plot target
-    axes[1].imshow(torch.argmax(targets[0], 0)[i].cpu().numpy(), cmap="inferno")
+    axes[1].imshow(torch.argmax(targets[0], 0)[:,:,i].cpu().numpy(), cmap="inferno")
     axes[1].axis('off')
 
+    print(preds[0][5][100,100])
+
     # plot prediction
-    axes[2].imshow(torch.argmax(preds[0], 0)[i].cpu().numpy(), cmap="inferno")
+    axes[2].imshow(torch.argmax(preds[0], 0)[:,:,i].cpu().numpy(), cmap="inferno")
     axes[2].axis('off')
 
     plt.tight_layout()
