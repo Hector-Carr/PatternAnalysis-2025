@@ -15,7 +15,7 @@ where:\
 (n): numer of channels
 
 ### reproducing results
-To reproduce similar results, you will need to have a machine to train this model and the data to train it. The data can either be retireved on the uq gpu cluster or from [2]. After that there is some preporcessing that the user must compleate. That is documented in the Data section of this readme. Other than that a python environment with all the various dependancies is required.\
+To reproduce similar results, you will need to have a machine to train this model and the data to train it. The data can either be retireved on the uq gpu cluster or from [2]. After that there is some preporcessing that the user must compleate. That is documented in the Data section of this readme. Other than that a python environment with all the various dependancies is required.
 
 After the setup is compleated train.py can be run to train a model and predict.py can be run to test the model and print out various statisticts
 
@@ -40,7 +40,7 @@ The packages used to run this code are as follows,
 - nibabel 5.3.2
 - tdqm 4.67.1
 - scikit-learn 1.7.2
-- matplotlib 3.10.7 
+- matplotlib 3.10.7\ 
 Difering versions could be especially versions >= version used. Additionally these packages themselves have dependencies.
 
 ## Data
