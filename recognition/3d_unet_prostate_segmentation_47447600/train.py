@@ -39,6 +39,10 @@ def train(
     if optimizer is None:
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
+    # if model exist keep training
+    if os.path.isfile(save_path):
+        model.load_state_dict(torch.load(save_path, map_location=device))
+
     model = model.to(device)
     best_val_loss = float("inf")
 
@@ -98,7 +102,7 @@ if __name__ == "__main__":
         model, 
         train_loader, 
         val_loader, 
-        num_epochs=30,
+        num_epochs=10,
         lr=0.001,
         device=device,
         criterion=DiceCELoss(),

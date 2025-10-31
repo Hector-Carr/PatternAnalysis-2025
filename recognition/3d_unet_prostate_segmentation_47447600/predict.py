@@ -1,11 +1,13 @@
 import torch
 import torch.nn as nn
+from torchmetrics.segmentation import DiceScore
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 
 from dataset import get_dataloaders 
-from modules import SimpleUNet, DiceLoss
+from modules import SimpleUNet
+from modules import DiceCELoss as DiceLoss 
 
 def test(
     model,
@@ -39,15 +41,18 @@ def test(
     all_class_dice = []
     num_batches = 0
 
+    te = DiceScore(num_classes=6, average=None)
+    a = []
+
     with torch.no_grad():
         for inputs, targets in tqdm(test_loader, desc="Testing", leave=False):
             inputs, targets = inputs.to(device), targets.to(device)
 
             outputs = model(inputs)
-            dice, per_class_dice = criterion._dice(outputs, targets, per_class=True)
+            dice = criterion._dice(outputs, targets)
             total_dice += dice
             all_dice.append(dice)
-            all_class_dice += list(per_class_dice)
+            all_class_dice += list(te(outputs, targets))
 
             if unnormalised_loader:
                 plot_images(unnormalised_loader.dataset[num_batches][0], outputs, targets, num_batches, dice)
@@ -82,7 +87,17 @@ def plot_images(inputs, preds, targets, batch, dice):
     axes[1].imshow(torch.argmax(targets[0], 0)[:,:,i].cpu().numpy(), cmap="inferno")
     axes[1].axis('off')
 
-    print(preds[0][5][100,100])
+    unhot = torch.argmax(preds[0], 0)
+
+    #print("==========================================================================")
+    #print(unhot[:,127,i].cpu().numpy)
+    #print(preds[0][0][:,127,i].cpu().numpy())
+    #print(preds[0][1][:,127,i].cpu().numpy())
+    #print(preds[0][2][:,127,i].cpu().numpy())
+    #print(preds[0][3][:,127,i].cpu().numpy())
+    #print(preds[0][4][:,127,i].cpu().numpy())
+    #print(preds[0][5][:,127,i].cpu().numpy())
+    #print(preds[0][5].shape)
 
     # plot prediction
     axes[2].imshow(torch.argmax(preds[0], 0)[:,:,i].cpu().numpy(), cmap="inferno")
@@ -105,7 +120,7 @@ if __name__ == "__main__":
     test(
         model,
         test_loader,
-        checkpoint_path="model.pt",
+        checkpoint_path="model2.pt",
         unnormalised_loader = unnormalised_loader, 
         device=device,
         criterion=DiceLoss()

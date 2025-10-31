@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchmetrics.segmentation import DiceScore
 
 class SimpleUNet(nn.Module):
     """
@@ -70,6 +71,7 @@ class DiceCELoss(nn.Module):
         """
         super(DiceCELoss, self).__init__()
         self.weight = weight
+        self._dice = DiceScore(num_classes=6, average="macro")
         self.dice_weight = dice_weight
         self.ce_weight = ce_weight
         self.smooth = smooth
@@ -88,32 +90,32 @@ class DiceCELoss(nn.Module):
             mean_dice (torch.Tensor): Mean Dice score across classes.
         """
         # Cross entropy loss
-        ce_loss = F.cross_entropy(pred, targets, weight=self.weight)
+        ce_loss = F.cross_entropy(pred, target, weight=self.weight)
 
         # dice score
-        dice = self._dice(pred, targets)
+        dice = self._dice(pred, target)
 
         # Combine losses
         total_loss = self.dice_weight * (1 - dice) + self.ce_weight * ce_loss
         return total_loss
 
-    def _dice(self, pred, target, per_class=False):
-        num_classes = target.size(1)
+    #def _dice(self, pred, target, per_class=False):
+        #num_classes = target.size(1)
 
         # Flatten batch and spatial dimensions
-        pred_flat = pred.reshape(-1, num_classes)
-        target_flat = target.reshape(-1, num_classes)
+        #pred_flat = pred.reshape(-1, num_classes)
+        #target_flat = target.reshape(-1, num_classes)
 
-        intersection = (pred_flat * target_flat).sum(dim=0)
-        union = pred_flat.sum(dim=0) + target_flat.sum(dim=0)
+        #intersection = (pred_flat * target_flat).sum(dim=0)
+        #union = pred_flat.sum(dim=0) + target_flat.sum(dim=0)
 
-        dice_per_class = (2.0 * intersection + self.smooth) / (union + self.smooth)
-        dice = dice_per_class.mean()
+        #dice_per_class = (2.0 * intersection + self.smooth) / (union + self.smooth)
+        #dice = dice_per_class.mean()
 
-        if per_class:
-            return dice, dice_per_class
+        #if per_class:
+        #    return dice, dice_per_class
         
-        else:
-            return dice
+        #else:
+        #    return dice
         
 
