@@ -15,11 +15,10 @@ LAB_PATH = "data/semantic_labels_anon/"
 BATCH_SIZE = 1
 
 class HipMRI_Dataset(Dataset):
-    def __init__(self, MRs, labels, transform=None):
+    def __init__(self, MRs, labels, normalised=True):
         assert len(MRs) == len(labels), "Number of images and labels must match"
-        self.images = load_data_3D(MRs, normImage=True)
+        self.images = load_data_3D(MRs, normImage=normalised)
         self.labels = load_data_3D(labels, dtype=np.uint8)
-        self.transform = transform
 
     def __len__(self):
         return len(self.images)
@@ -44,7 +43,7 @@ class HipMRI_Dataset(Dataset):
         return image, label_onehot
 
 # function to automatically split data into test and train dataloaders
-def get_dataloaders(train_val=False, test=False):
+def get_dataloaders(train_val=False, test=False, normalised=True):
     # load files availble
     MRs = [MR_PATH+f for f in os.listdir(MR_PATH)]
     labels = [LAB_PATH+f for f in os.listdir(LAB_PATH)]
@@ -65,8 +64,8 @@ def get_dataloaders(train_val=False, test=False):
     
     if train_val:
         # load datasets
-        train_dataset = HipMRI_Dataset(X_train, y_train)#, transform=transforms.ToTensor())
-        val_dataset = HipMRI_Dataset(X_val, y_val)#, transform=transforms.ToTensor())
+        train_dataset = HipMRI_Dataset(X_train, y_train, normalised=normalised)
+        val_dataset = HipMRI_Dataset(X_val, y_val, normalised=normalised)
 
         # put datasets into dataloaders 
         train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
@@ -79,7 +78,7 @@ def get_dataloaders(train_val=False, test=False):
     
     elif test:
         # load dataset
-        test_dataset = HipMRI_Dataset(X_test, y_test)
+        test_dataset = HipMRI_Dataset(X_test, y_test, normalised=normalised)
 
         # put dataset into dataloader
         test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
