@@ -20,7 +20,7 @@ To reproduce similar results, you will need to have a machine to train this mode
 After the setup is compleated train.py can be run to train a model and predict.py can be run to test the model and print out various statisticts
 
 ## Results
-The results of the training of the algorithm were unfortunately unsuccessfull. This is because of a faulty loss function that seemed to indicate that the model was successfully training. This fault was only discovered when visualisations of the results were being created, without time to train new models fully, or test variations on hyper perameters. Below can be seen the resutls of training a model with an experimental dice-ce loss only trained for xxxxxxxxxxxxxxxx epochs, with an average test dice coeficient of xxxxxxxxxxxxx, far from the expectation.
+The results of the training of the algorithm were unfortunately unsuccessfull. This is because of a faulty loss function that seemed to indicate that the model was successfully training. This fault was only discovered when visualisations of the results were being created, without time to train new models fully, or test variations on hyper perameters. Below can be seen the resutls of training a model with an experimental dice-ce loss only trained for 30 epochs, with an average test dice coeficient of 0.2953, far from the expectation.
 ![Graph of good results](images/res_good.png)
 ![Graph of mid results](images/res_mid.png)
 ![Graph of bad results](images/res_bad.png)
