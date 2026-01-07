@@ -40,7 +40,7 @@ The packages used to run this code are as follows,
 - nibabel 5.3.2
 - tdqm 4.67.1
 - scikit-learn 1.7.2
-- matplotlib 3.10.7 
+- matplotlib 3.10.7 \n 
 Difering versions could be especially versions >= version used. Additionally these packages themselves have dependencies.
 
 ## Data
