@@ -35,7 +35,8 @@ def train(
 
     # Defaults
     if criterion is None:
-        criterion = nn.BCEWithLogitsLoss()  # good for segmentation
+        raise ValueError()
+        #criterion = nn.BCEWithLogitsLoss()  # good for segmentation
     if optimizer is None:
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
@@ -67,7 +68,7 @@ def train(
         train_loss /= len(train_loader.dataset)
         print(f"Train Loss: {train_loss:.4f}")
 
-        # --- Validation (optional) ---
+        # --- Validation ---
         if val_loader is not None:
             model.eval()
             val_loss = 0.0

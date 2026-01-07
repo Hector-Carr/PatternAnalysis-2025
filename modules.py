@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchmetrics.segmentation import DiceScore
+#from torchmetrics.segmentation import DiceScore
 
 class SimpleUNet(nn.Module):
     """
@@ -25,7 +25,10 @@ class SimpleUNet(nn.Module):
         self.dec1 = nn.Conv3d(32, out_channels, 1)
 
         self.pool = nn.MaxPool3d(2)
-        self.upsample = nn.Upsample(scale_factor=2, mode='trilinear', align_corners=True)
+        #self.upsample = nn.Upsample(scale_factor=2, mode='trilinear', align_corners=True)
+        self.up1 = nn.ConvTranspose3d(512, 512, 2, 2)
+        self.up2 = nn.ConvTranspose3d(256, 256, 2, 2)
+        self.up3 = nn.ConvTranspose3d(64, 64, 2, 2)
         self.sigmoid = nn.Sigmoid()  # Sigmoid activation for final output
 
     def _conv_block(self, in_ch, mid_ch, out_ch, dropout_p=0.2):
@@ -49,9 +52,9 @@ class SimpleUNet(nn.Module):
         e4 = self.enc4(self.pool(e3))  # 32x32x16
 
         # Decoder with skip connections
-        d4 = self.dec4(torch.cat([self.upsample(e4), e3], 1))  # 64x64x32
-        d3 = self.dec3(torch.cat([self.upsample(d4), e2], 1))  # 128x128x64
-        d2 = self.dec2(torch.cat([self.upsample(d3), e1], 1))  # 256x256x128
+        d4 = self.dec4(torch.cat([self.up1(e4), e3], 1))  # 64x64x32
+        d3 = self.dec3(torch.cat([self.up2(d4), e2], 1))  # 128x128x64
+        d2 = self.dec2(torch.cat([self.up3(d3), e1], 1))  # 256x256x128
         out = self.dec1(d2)
 
         # Apply sigmoid activation to final output
@@ -71,7 +74,6 @@ class DiceCELoss(nn.Module):
         """
         super(DiceCELoss, self).__init__()
         self.weight = weight
-        self._dice = DiceScore(num_classes=6, average="macro")
         self.dice_weight = dice_weight
         self.ce_weight = ce_weight
         self.smooth = smooth
@@ -90,12 +92,31 @@ class DiceCELoss(nn.Module):
             mean_dice (torch.Tensor): Mean Dice score across classes.
         """
         # Cross entropy loss
-        ce_loss = F.cross_entropy(pred, target, weight=self.weight)
+        #ce_loss = F.cross_entropy(pred, target, weight=self.weight)
 
         # dice score
-        dice = self._dice(pred, target)
+        dice = self._dice(pred, target, smoothing=self.smooth)
 
         # Combine losses
-        total_loss = self.dice_weight * (1 - dice) + self.ce_weight * ce_loss
+        #total_loss = self.dice_weight * (1 - dice) + self.ce_weight * ce_loss
+        total_loss = 1 - dice
         return total_loss
+    
+    def _dice(self, pred, target, num_classes=6, smothing=1e-5):
+        assert pred.shape == target.shape, "Pred and target must have same shape"
+        assert pred.shape[1] == num_classes, "Expected 6 classes"
+
+        # Flatten spatial dimensions
+        pred = pred.float().flatten(start_dim=2)
+        target = target.float().flatten(start_dim=2)
+
+        # Compute Dice per class
+        intersection = (pred * target).sum(dim=(0, 2))
+        union = pred.sum(dim=(0, 2)) + target.sum(dim=(0, 2))
+
+        dice = (2.0 * intersection + smothing) / (union + smothing)
+        
+        return dice.mean()
+
+        #return dice
 
