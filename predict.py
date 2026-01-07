@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from dataset import get_dataloaders 
 from modules import SimpleUNet
-from modules import Diceloss 
+from modules import DiceLoss 
 
 def test(
     model,
