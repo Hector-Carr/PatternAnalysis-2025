@@ -64,9 +64,18 @@ def test(
     print(f"\nMin Dice Coeficient: {min(all_dice)}")
     print(f"\nMin Dice Coeficient in any class: {min(all_class_dice)}")
 
+    for dice in all_dice:
+        print(", ".join([float(n) for n in dice]))
+
     return avg_dice, all_dice, all_class_dice
 
 def plot_images(inputs, preds, targets, batch, dice):
+    print("plot info:")
+    print(inputs.size())
+    print(preds.size())
+    print(targes.size())
+    print(batch)
+    print(dice)
     # only plot if batch size is one
     if inputs.size(0) != 1:
         return
