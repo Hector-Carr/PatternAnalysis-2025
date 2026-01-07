@@ -1,13 +1,12 @@
 import torch
 import torch.nn as nn
-from torchmetrics.segmentation import DiceScore
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 
 from dataset import get_dataloaders 
 from modules import SimpleUNet
-from modules import DiceCELoss as DiceLoss 
+from modules import Diceloss 
 
 def test(
     model,
@@ -41,7 +40,7 @@ def test(
     all_class_dice = []
     num_batches = 0
 
-    non_ave_ds = DiceScore(num_classes=6, average=None)
+    non_ave_ds = (lambda x, y: Diceloss._dice(x, y, smoothing=1e-5, mean=False))
 
     with torch.no_grad():
         for inputs, targets in tqdm(test_loader, desc="Testing", leave=False):
@@ -104,11 +103,11 @@ if __name__ == "__main__":
     unnormalised_loader = get_dataloaders(test=True, normalised=False)
     model = SimpleUNet(in_channels=1, out_channels=6, dropout_p=0.2)
 
-    test(
+    print(test(
         model,
         test_loader,
-        checkpoint_path="model2.pt",
+        checkpoint_path="model.pt",
         unnormalised_loader = unnormalised_loader, 
         device=device,
         criterion=DiceLoss()
-    )
+    ))
