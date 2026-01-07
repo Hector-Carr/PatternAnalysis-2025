@@ -73,7 +73,7 @@ def plot_images(inputs, preds, targets, batch, dice):
     print("plot info:")
     print(inputs.size())
     print(preds.size())
-    print(targes.size())
+    print(targets.size())
     print(batch)
     print(dice)
     # only plot if batch size is one
