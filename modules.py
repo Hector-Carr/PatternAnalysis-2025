@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-#from torchmetrics.segmentation import DiceScore
 
 class SimpleUNet(nn.Module):
     """
@@ -63,8 +62,8 @@ class SimpleUNet(nn.Module):
         return out
 
 
-class DiceCELoss(nn.Module):
-    def __init__(self, weight=None, dice_weight=0.5, ce_weight=0.5, smooth=1e-5):
+class DiceLoss(nn.Module):
+    def __init__(self, smooth=1e-5):
         """
         Args:
             weight (Tensor, optional): Class weights for CrossEntropyLoss.
@@ -72,10 +71,7 @@ class DiceCELoss(nn.Module):
             ce_weight (float): Weight of Cross-Entropy loss component.
             smooth (float): Smoothing term to avoid division by zero.
         """
-        super(DiceCELoss, self).__init__()
-        self.weight = weight
-        self.dice_weight = dice_weight
-        self.ce_weight = ce_weight
+        super(DiceLoss, self).__init__()
         self.smooth = smooth
 
     def forward(self, pred, target):
@@ -91,18 +87,12 @@ class DiceCELoss(nn.Module):
             dice_per_class (torch.Tensor): Dice score for each class (C,).
             mean_dice (torch.Tensor): Mean Dice score across classes.
         """
-        # Cross entropy loss
-        #ce_loss = F.cross_entropy(pred, target, weight=self.weight)
-
         # dice score
         dice = self._dice(pred, target, smoothing=self.smooth)
 
-        # Combine losses
-        #total_loss = self.dice_weight * (1 - dice) + self.ce_weight * ce_loss
-        total_loss = 1 - dice
-        return total_loss
+        return 1 - dice
     
-    def _dice(self, pred, target, num_classes=6, smoothing=1e-5):
+    def _dice(self, pred, target, num_classes=6, smoothing=1e-5, mean=True):
         assert pred.shape == target.shape, "Pred and target must have same shape"
         assert pred.shape[1] == num_classes, "Expected 6 classes"
 
@@ -116,7 +106,8 @@ class DiceCELoss(nn.Module):
 
         dice = (2.0 * intersection + smoothing) / (union + smoothing)
         
-        return dice.mean()
-
-        #return dice
+        if mean:
+            return dice.mean()
+        else:
+            return dice
 
