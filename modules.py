@@ -102,7 +102,7 @@ class DiceCELoss(nn.Module):
         total_loss = 1 - dice
         return total_loss
     
-    def _dice(self, pred, target, num_classes=6, smothing=1e-5):
+    def _dice(self, pred, target, num_classes=6, smoothing=1e-5):
         assert pred.shape == target.shape, "Pred and target must have same shape"
         assert pred.shape[1] == num_classes, "Expected 6 classes"
 
@@ -114,7 +114,7 @@ class DiceCELoss(nn.Module):
         intersection = (pred * target).sum(dim=(0, 2))
         union = pred.sum(dim=(0, 2)) + target.sum(dim=(0, 2))
 
-        dice = (2.0 * intersection + smothing) / (union + smothing)
+        dice = (2.0 * intersection + smoothing) / (union + smoothing)
         
         return dice.mean()
 
