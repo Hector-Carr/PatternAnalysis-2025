@@ -40,7 +40,7 @@ def test(
     all_class_dice = []
     num_batches = 0
 
-    non_ave_ds = (lambda x, y: DiceLoss._dice(x, y, smoothing=1e-5, mean=False))
+    non_ave_ds = (lambda x, y: DiceLoss._dice("", x, y, smoothing=1e-5, mean=False))
 
     with torch.no_grad():
         for inputs, targets in tqdm(test_loader, desc="Testing", leave=False):

@@ -12,21 +12,20 @@ class SimpleUNet(nn.Module):
         super().__init__()
 
         # Encoder (downsampling)
-        self.enc1 = self._conv_block(in_channels, 8, 16, dropout_p)
-        self.enc2 = self._conv_block(16, 32, 64, dropout_p)
-        self.enc3 = self._conv_block(64, 128, 256, dropout_p)
-        self.enc4 = self._conv_block(256, 256, 512, dropout_p)
+        self.enc1 = self._conv_block(in_channels, 16, 32, dropout_p)
+        self.enc2 = self._conv_block(32, 32, 64, dropout_p)
+        self.enc3 = self._conv_block(64, 64, 128, dropout_p)
+        self.enc4 = self._conv_block(128, 128, 256, dropout_p)
 
         # Decoder (upsampling)
-        self.dec4 = self._conv_block(512 + 256, 256, 256, dropout_p)
-        self.dec3 = self._conv_block(256 + 64, 128, 64, dropout_p)
-        self.dec2 = self._conv_block(64 + 16, 32, 32, dropout_p)
+        self.dec4 = self._conv_block(256 + 128, 256, 128, dropout_p)
+        self.dec3 = self._conv_block(128 + 64, 128, 64, dropout_p)
+        self.dec2 = self._conv_block(64 + 32, 64, 32, dropout_p)
         self.dec1 = nn.Conv3d(32, out_channels, 1)
 
-        self.pool = nn.MaxPool3d(2)
-        #self.upsample = nn.Upsample(scale_factor=2, mode='trilinear', align_corners=True)
-        self.up1 = nn.ConvTranspose3d(512, 512, 2, 2)
-        self.up2 = nn.ConvTranspose3d(256, 256, 2, 2)
+        self.pool = nn.MaxPool3d(2, stride=2)
+        self.up1 = nn.ConvTranspose3d(256, 256, 2, 2)
+        self.up2 = nn.ConvTranspose3d(128, 128, 2, 2)
         self.up3 = nn.ConvTranspose3d(64, 64, 2, 2)
         self.sigmoid = nn.Sigmoid()  # Sigmoid activation for final output
 
