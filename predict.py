@@ -40,16 +40,10 @@ def test(
     all_class_dice = []
     num_batches = 0
 
-    i = 1
-    foo(test_loader[0][0], test_loader[0][1], 0)
-
-
     non_ave_ds = (lambda x, y: DiceLoss._dice("", x, y, smoothing=1e-5, mean=False))
 
     with torch.no_grad():
         for inputs, targets in tqdm(test_loader, desc="Testing", leave=False):
-            foo(inputs, targets, i)
-            i += 1
             inputs, targets = inputs.to(device), targets.to(device)
 
             outputs = model(inputs)
@@ -71,29 +65,7 @@ def test(
     print(f"\nMin Dice Coeficient: {min(all_dice)}")
     print(f"\nMin Dice Coeficient in any class: {min(all_class_dice)}")
 
-    for dice in all_class_dice:
-
-        print(", ".join([float(n) for n in dice]))
-
     return avg_dice, all_dice, all_class_dice
-
-def foo(im, lab, test_no):
-    i = 64
-    print(im.size())
-        
-    fig, axes = plt.subplots(1, 2, figsize=(16, 4))
-    #print(test_dataset[0][1].size())
-    # plot input
-    axes[0].imshow(im[0][:,:,i].cpu().numpy(), cmap="inferno")
-    axes[0].axis('off')
-
-    # plot target
-    axes[1].imshow(torch.argmax(lab, 0)[:,:,i].cpu().numpy(), cmap="inferno")
-    axes[1].axis('off')
-
-    plt.show()
-    plt.savefig(f"images/test_{test_no}.png", dpi=300, bbox_inches='tight')
-    plt.close(fig)  # Close the figure to free memory
 
 def plot_images(inputs, preds, targets, batch, dice):
     print("plot info:")
