@@ -46,7 +46,9 @@ class HipMRI_Dataset(Dataset):
 def get_dataloaders(train_val=False, test=False, normalised=True):
     # load files availble
     MRs = [MR_PATH+f for f in os.listdir(MR_PATH)]
+    MRs.sort()
     labels = [LAB_PATH+f for f in os.listdir(LAB_PATH)]
+    labels.sort()
 
     # basic check for files
     if len(MRs) != len(labels):
