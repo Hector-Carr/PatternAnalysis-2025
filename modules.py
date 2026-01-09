@@ -62,7 +62,7 @@ class SimpleUNet(nn.Module):
 
 
 class DiceLoss(nn.Module):
-    def __init__(self, smooth=1e-5):
+    def __init__(self, smooth=1e-6):
         """
         Args:
             weight (Tensor, optional): Class weights for CrossEntropyLoss.
@@ -72,6 +72,9 @@ class DiceLoss(nn.Module):
         """
         super(DiceLoss, self).__init__()
         self.smooth = smooth
+        self.ce = nn.CrossEntropyLoss()
+        self.dice_weight = 0.5
+        self.ce_weight = 0.5
 
     def forward(self, pred, target):
         """
@@ -88,10 +91,11 @@ class DiceLoss(nn.Module):
         """
         # dice score
         dice = self._dice(pred, target, smoothing=self.smooth)
+        ce_loss = self.ce(pred, target)
 
-        return 1 - dice
+        return self.ce_weight * ce_loss + self.dice_weight * (1 - dice)
     
-    def _dice(self, pred, target, num_classes=6, smoothing=1e-5, mean=True):
+    def _dice(self, pred, target, num_classes=6, smoothing=1e-6, mean=True):
         assert pred.shape == target.shape, "Pred and target must have same shape"
         assert pred.shape[1] == num_classes, "Expected 6 classes"
 
