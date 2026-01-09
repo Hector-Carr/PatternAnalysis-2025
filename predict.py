@@ -50,7 +50,7 @@ def test(
             outputs = model(inputs)
             dice = criterion._dice(outputs, targets)
             total_dice += dice
-            all_dice.append(dice)
+            all_dice.append(dice){d[0]:.3f}
             nad = non_ave_ds(outputs, targets)
             all_class_dice += list(nd)
             class_sep_dice.append(nd)
@@ -88,18 +88,18 @@ def plot_images(inputs, preds, targets, batch, dice):
     fig, axes = plt.subplots(1, 3, figsize=(12, 4))
     
     # find index to plot over
-    i = inputs[0].size(-1)//2
+    i = inputs[0].size(-3)//2
 
     # plot input
-    axes[0].imshow(inputs[0][:,:,i].cpu().numpy(), cmap="inferno")
+    axes[0].imshow(inputs[0][i,:,:].cpu().numpy(), cmap="inferno")
     axes[0].axis('off')
 
     # plot target
-    axes[1].imshow(torch.argmax(targets[0], 0)[:,:,i].cpu().numpy(), cmap="inferno")
+    axes[1].imshow(torch.argmax(targets[0], 0)[i,:,:].cpu().numpy(), cmap="inferno")
     axes[1].axis('off')
 
     # plot prediction
-    axes[2].imshow(torch.argmax(preds[0], 0)[:,:,i].cpu().numpy(), cmap="inferno")
+    axes[2].imshow(torch.argmax(preds[0], 0)[i,:,:].cpu().numpy(), cmap="inferno")
     axes[2].axis('off')
 
     plt.tight_layout()
