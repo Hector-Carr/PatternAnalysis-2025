@@ -38,6 +38,7 @@ def test(
     total_dice = 0.0
     all_dice = []
     all_class_dice = []
+    class_sep_dice = []
     num_batches = 0
 
     non_ave_ds = (lambda x, y: DiceLoss._dice("", x, y, smoothing=1e-5, mean=False))
@@ -50,7 +51,9 @@ def test(
             dice = criterion._dice(outputs, targets)
             total_dice += dice
             all_dice.append(dice)
-            all_class_dice += list(non_ave_ds(outputs, targets))
+            nad = non_ave_ds(outputs, targets)
+            all_class_dice += list(nd)
+            class_sep_dice.append(nd)
 
             if unnormalised_loader:
 
@@ -64,6 +67,9 @@ def test(
     print(f"\nAll Dice Coeficients: {all_dice}")
     print(f"\nMin Dice Coeficient: {min(all_dice)}")
     print(f"\nMin Dice Coeficient in any class: {min(all_class_dice)}")
+    for n in range(len(class_sep_dice)):
+        d = class_sep_dice[n]
+        print(f"sample {n}: back:{d[0]:.3f}, flesh:{d[1]:.3f}, bone:{d[2]:.3f}, bladder:{d[3]:.3f}, anal:{d[4]:.3f}, prostate:{d[5]:.3f}")
 
     return avg_dice, all_dice, all_class_dice
 
