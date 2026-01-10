@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
@@ -47,8 +48,7 @@ def test(
         for inputs, targets in tqdm(test_loader, desc="Testing", leave=False):
             inputs, targets = inputs.to(device), targets.to(device)
 
-            outputs = torch.argmax(model(inputs)[0], 0)
-            print(outputs.shape())
+            outputs = F.one_hot(torch.argmax(model(inputs)[0], 0))
             dice = criterion._dice(outputs, targets)
             total_dice += dice
             all_dice.append(dice)
@@ -57,6 +57,7 @@ def test(
             class_sep_dice.append(nad)
 
             if unnormalised_loader:
+import torch.nn.functional as F
                 plot_images(unnormalised_loader.dataset[num_batches][0], outputs, targets, num_batches, dice)
 
             num_batches += inputs.size(0)
