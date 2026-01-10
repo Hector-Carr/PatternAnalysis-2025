@@ -47,16 +47,16 @@ def test(
         for inputs, targets in tqdm(test_loader, desc="Testing", leave=False):
             inputs, targets = inputs.to(device), targets.to(device)
 
-            outputs = model(inputs)
+            outputs = torch.argmax(model(inputs)[0], 0)
+            print(outputs.shape())
             dice = criterion._dice(outputs, targets)
             total_dice += dice
-            all_dice.append(dice){d[0]:.3f}
+            all_dice.append(dice)
             nad = non_ave_ds(outputs, targets)
-            all_class_dice += list(nd)
-            class_sep_dice.append(nd)
+            all_class_dice += list(nad)
+            class_sep_dice.append(nad)
 
             if unnormalised_loader:
-
                 plot_images(unnormalised_loader.dataset[num_batches][0], outputs, targets, num_batches, dice)
 
             num_batches += inputs.size(0)
@@ -74,12 +74,6 @@ def test(
     return avg_dice, all_dice, all_class_dice
 
 def plot_images(inputs, preds, targets, batch, dice):
-    print("plot info:")
-    print(inputs.size())
-    print(preds.size())
-    print(targets.size())
-    print(batch)
-    print(dice)
     # only plot if batch size is one
     if inputs.size(0) != 1:
         return
@@ -117,11 +111,11 @@ if __name__ == "__main__":
     unnormalised_loader = get_dataloaders(test=True, normalised=False)
     model = SimpleUNet(in_channels=1, out_channels=6, dropout_p=0.2)
 
-    print(test(
+    test(
         model,
         test_loader,
         checkpoint_path="model.pt",
         unnormalised_loader = unnormalised_loader, 
         device=device,
         criterion=DiceLoss()
-    ))
+    )
