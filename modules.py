@@ -91,9 +91,10 @@ class DiceLoss(nn.Module):
         """
         # dice score
         dice = self._dice(pred, target, smoothing=self.smooth)
-        ce_loss = self.ce(pred, target)
-
-        return self.ce_weight * ce_loss + self.dice_weight * (1 - dice)
+        #ce_loss = self.ce(pred, target)
+        
+        return 1 - dice
+        #return self.ce_weight * ce_loss + self.dice_weight * (1 - dice)
     
     def _dice(self, pred, target, num_classes=6, smoothing=1e-6, mean=True):
         assert pred.shape == target.shape, "Pred and target must have same shape"

@@ -58,7 +58,7 @@ def train(
             inputs, targets = inputs.to(device), targets.to(device)
 
             optimizer.zero_grad()
-            outputs = model(inputs)
+            outputs = F.one_hot(torch.argmax(model(inputs)[0], 0)).permute(3, 0, 1, 2).unsqueeze(0)
             loss = criterion(outputs, targets)
             loss.backward()
             optimizer.step()
