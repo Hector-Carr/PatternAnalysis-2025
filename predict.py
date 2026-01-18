@@ -48,7 +48,7 @@ def test(
         for inputs, targets in tqdm(test_loader, desc="Testing", leave=False):
             inputs, targets = inputs.to(device), targets.to(device)
 
-            outputs = F.one_hot(torch.argmax(model(inputs)[0], 0)).permute(3, 0, 1, 2).unsqueeze(0)
+            outputs = model(inputs)
             dice = criterion._dice(outputs, targets)
             total_dice += dice
             all_dice.append(dice)
