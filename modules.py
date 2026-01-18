@@ -100,13 +100,9 @@ class DiceLoss(nn.Module):
         assert pred.shape == target.shape, "Pred and target must have same shape"
         assert pred.shape[1] == num_classes, "Expected 6 classes"
 
-        # Flatten spatial dimensions
-        pred = pred.float().flatten(start_dim=2)
-        target = target.float().flatten(start_dim=2)
-
         # Compute Dice per class
-        intersection = (pred * target).sum(dim=(0, 2))
-        union = pred.sum(dim=(0, 2)) + target.sum(dim=(0, 2))
+        intersection = torch.sum(pred * target, (0, 2, 3, 4))
+        union = torch.sum(pred + targer, (0, 2, 3, 4))
 
         dice = (2.0 * intersection + smoothing) / (union + smoothing)
         
