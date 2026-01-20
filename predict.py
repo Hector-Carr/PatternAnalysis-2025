@@ -36,44 +36,37 @@ def test(
     model = model.to(device)
     model.eval()
 
-    total_dice = 0.0
-    all_dice = []
-    all_class_dice = []
-    class_sep_dice = []
-    num_batches = 0
-
-    non_ave_ds = (lambda x, y: DiceLoss._dice("", x, y, smoothing=1e-5, mean=False))
+    all_dice = torch.empty(0)
 
     with torch.no_grad():
         for inputs, targets in tqdm(test_loader, desc="Testing", leave=False):
             inputs, targets = inputs.to(device), targets.to(device)
 
             outputs = model(inputs)
-            dice = criterion._dice(outputs, targets)
-            total_dice += dice
-            all_dice.append(dice)
-            nad = non_ave_ds(outputs, targets)
-            all_class_dice += list(nad)
-            class_sep_dice.append(nad)
+            dice = criterion._dice(outputs, targets, mean=False)
+            all_dice = torch.cat((all_dice, dice))
 
             if unnormalised_loader:
                 plot_images(unnormalised_loader.dataset[num_batches][0], outputs, targets, num_batches, dice)
 
-            num_batches += inputs.size(0)
+    print(f"\nTest Dice Coeficient: {all_dice.mean():.4f}")
+    print(f"\nMin Average Dice in any test Coeficient: {min(all_dice.mean(1)):.4f}")
+    print(f"\nMin Average Dice Coeficient in any class: {min(all_dice.mean(0)):.4f}")
+    print(f"\nMin Dice Coeficient in any test in any class: {min(all_dice):.4f}")
 
-    avg_dice = total_dice / num_batches
+    class_sep_dice = all_dice.reshape(len(all_dice)//6, 6)
 
-    print(f"\nTest Dice Coeficient: {avg_dice:.4f}")
-    print(f"\nAll Dice Coeficients: {all_dice}")
-    print(f"\nMin Dice Coeficient: {min(all_dice)}")
-    print(f"\nMin Dice Coeficient in any class: {min(all_class_dice)}")
+    print("All dice scores for all classes and all tests")
     for n in range(len(class_sep_dice)):
         d = class_sep_dice[n]
-        print(f"sample {n}: back:{d[0]:.3f}, flesh:{d[1]:.3f}, bone:{d[2]:.3f}, bladder:{d[3]:.3f}, anal:{d[4]:.3f}, prostate:{d[5]:.3f}")
+        print(f"sample {n}: ave:{d.mean().3f}, back:{d[0]:.3f}, flesh:{d[1]:.3f}, bone:{d[2]:.3f}, bladder:{d[3]:.3f}, anal:{d[4]:.3f}, prostate:{d[5]:.3f}")
 
     return avg_dice, all_dice, all_class_dice
 
 def plot_images(inputs, preds, targets, batch, dice):
+    """
+    plot a slice of a 3d image
+    """
     # only plot if batch size is one
     if inputs.size(0) != 1:
         return
@@ -82,18 +75,18 @@ def plot_images(inputs, preds, targets, batch, dice):
     fig, axes = plt.subplots(1, 3, figsize=(12, 4))
     
     # find index to plot over
-    i = inputs[0].size(-3)//2
+    i = inputs[0].size(-1)//2
 
     # plot input
-    axes[0].imshow(inputs[0][i,:,:].cpu().numpy(), cmap="inferno")
+    axes[0].imshow(inputs[0][:,:,i].cpu().numpy(), cmap="inferno")
     axes[0].axis('off')
 
     # plot target
-    axes[1].imshow(torch.argmax(targets[0], 0)[i,:,:].cpu().numpy(), cmap="inferno")
+    axes[1].imshow(torch.argmax(targets[0], 0)[:,:,i].cpu().numpy(), cmap="inferno")
     axes[1].axis('off')
 
     # plot prediction
-    axes[2].imshow(torch.argmax(preds[0], 0)[i,:,:].cpu().numpy(), cmap="inferno")
+    axes[2].imshow(torch.argmax(preds[0], 0)[:,:,i].cpu().numpy(), cmap="inferno")
     axes[2].axis('off')
 
     plt.tight_layout()
