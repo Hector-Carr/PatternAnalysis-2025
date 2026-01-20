@@ -27,7 +27,7 @@ class SimpleUNet(nn.Module):
         self.up1 = nn.ConvTranspose3d(512, 512, 2, 2)
         self.up2 = nn.ConvTranspose3d(256, 256, 2, 2)
         self.up3 = nn.ConvTranspose3d(64, 64, 2, 2)
-        self.sigmoid = nn.Sigmoid()  # Sigmoid activation for final output
+        self.out_act = nn.Softmax(dim=1)  # Softmax activation for final output
 
     def _conv_block(self, in_ch, mid_ch, out_ch, dropout_p=0.2):
         """Conv block with batch normalization and LeakyReLU: Conv -> BN -> LeakyReLU -> Dropout -> Conv -> BN -> LeakyReLU -> Dropout"""
@@ -55,8 +55,8 @@ class SimpleUNet(nn.Module):
         d2 = self.dec2(torch.cat([self.up3(d3), e1], 1))  # 256x256x128
         out = self.dec1(d2)
 
-        # Apply sigmoid activation to final output
-        out = self.sigmoid(out)
+        # Apply softmax activation to final output
+        out = self.out_act(out)
 
         return out
 
@@ -72,9 +72,6 @@ class DiceLoss(nn.Module):
         """
         super(DiceLoss, self).__init__()
         self.smooth = smooth
-        self.ce = nn.CrossEntropyLoss()
-        self.dice_weight = 0.5
-        self.ce_weight = 0.5
 
     def forward(self, pred, target):
         """
@@ -91,15 +88,13 @@ class DiceLoss(nn.Module):
         """
         # dice score
         dice = self._dice(pred, target, smoothing=self.smooth)
-        #ce_loss = self.ce(pred, target)
         
         return 1 - dice
-        #return self.ce_weight * ce_loss + self.dice_weight * (1 - dice)
-    
-    def _dice(self, pred, target, num_classes=6, smoothing=1e-6, mean=True):
-        assert pred.shape == target.shape, "Pred and target must have same shape"
-        assert pred.shape[1] == num_classes, "Expected 6 classes"
 
+    def _dice(self, pred, target, num_classes=6, smoothing=1e-6, mean=True):
+        """
+        calculate the dice coefficient for any two images of the same dimensions
+        """
         # Compute Dice per class
         intersection = torch.sum(pred * target, (0, 2, 3, 4))
         union = torch.sum(pred + targer, (0, 2, 3, 4))

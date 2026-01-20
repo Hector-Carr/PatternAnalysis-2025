@@ -44,6 +44,9 @@ class HipMRI_Dataset(Dataset):
 
 # function to automatically split data into test and train dataloaders
 def get_dataloaders(train_val=False, test=False, normalised=True):
+    """
+    return requested dataloaders for later use
+    """
     # load files availble
     MRs = [MR_PATH+f for f in os.listdir(MR_PATH)]
     MRs.sort()

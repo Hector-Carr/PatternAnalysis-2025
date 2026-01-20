@@ -37,6 +37,7 @@ def test(
     model.eval()
 
     all_dice = torch.empty(0)
+    i = 0
 
     with torch.no_grad():
         for inputs, targets in tqdm(test_loader, desc="Testing", leave=False):
@@ -47,7 +48,8 @@ def test(
             all_dice = torch.cat((all_dice, dice))
 
             if unnormalised_loader:
-                plot_images(unnormalised_loader.dataset[num_batches][0], outputs, targets, num_batches, dice)
+                plot_images(unnormalised_loader.dataset[i][0], outputs, targets, i, dice)
+                i += 1
 
     print(f"\nTest Dice Coeficient: {all_dice.mean():.4f}")
     print(f"\nMin Average Dice in any test Coeficient: {min(all_dice.mean(1)):.4f}")
