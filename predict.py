@@ -63,8 +63,6 @@ def test(
         d = class_sep_dice[n]
         print(f"sample {n}: ave:{d.mean():.3f}, back:{d[0]:.3f}, flesh:{d[1]:.3f}, bone:{d[2]:.3f}, bladder:{d[3]:.3f}, anal:{d[4]:.3f}, prostate:{d[5]:.3f}")
 
-    return avg_dice, all_dice, all_class_dice
-
 def plot_images(inputs, preds, targets, batch, dice):
     """
     plot a slice of a 3d image

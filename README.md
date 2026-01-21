@@ -20,12 +20,10 @@ To reproduce similar results, you will need to have a machine to train this mode
 After the setup is compleated train.py can be run to train a model and predict.py can be run to test the model and print out various statisticts
 
 ## Results
-The results of the training of the algorithm were unfortunately unsuccessfull. This is because of a faulty loss function that seemed to indicate that the model was successfully training. This fault was only discovered when visualisations of the results were being created, without time to train new models fully, or test variations on hyper perameters. Below can be seen the resutls of training a model with an experimental dice-ce loss only trained for 30 epochs, with an average test dice coeficient of 0.2953, far from the expectation.
+The results of the training of the algorithm were successfull, the average dice score for all the tests being 0.9268, with the lowest dice score in any class for any test being 0.725. With further training, model refinement, or upgrading to an improved 3d Unet, this could likely be improved further. Below can be seen 3 examples of segmentation of the scans with the the first two being good and average, and the last being the worst result of any test.
 ![Graph of good results](images/res_good.png)
 ![Graph of mid results](images/res_mid.png)
 ![Graph of bad results](images/res_bad.png)
-
-From this it can be seen that the has been able to compleate basic segmentation of the major background and tissue areas, however it lacks the ability to properly segment 4 of the classes. It is unknown whether the model needed more time to train or whether the experemental loss function is inapropriate, more testing would be necesarry.
 
 Below can be seen the loss-validations curves of the model that was trained to find these images
 ![Graph of loss val](images/train_vs_val_loss.png)
@@ -35,7 +33,6 @@ Below can be seen the loss-validations curves of the model that was trained to f
 The packages used to run this code are as follows,
 - torch 2.8.0+cu126
 - torchvision 0.23.0+cu126
-- torchmetrics 1.8.2
 - numpy 2.3.3
 - nibabel 5.3.2
 - tdqm 4.67.1
