@@ -36,7 +36,7 @@ def test(
     model = model.to(device)
     model.eval()
 
-    all_dice = torch.empty(0)
+    all_dice = torch.empty(0, device=device)
     i = 0
 
     with torch.no_grad():
@@ -48,20 +48,20 @@ def test(
             all_dice = torch.cat((all_dice, dice))
 
             if unnormalised_loader:
-                plot_images(unnormalised_loader.dataset[i][0], outputs, targets, i, dice)
+                plot_images(unnormalised_loader.dataset[i][0], outputs, targets, i, dice.mean())
                 i += 1
 
-    print(f"\nTest Dice Coeficient: {all_dice.mean():.4f}")
-    print(f"\nMin Average Dice in any test Coeficient: {min(all_dice.mean(1)):.4f}")
-    print(f"\nMin Average Dice Coeficient in any class: {min(all_dice.mean(0)):.4f}")
-    print(f"\nMin Dice Coeficient in any test in any class: {min(all_dice):.4f}")
-
     class_sep_dice = all_dice.reshape(len(all_dice)//6, 6)
+
+    print(f"\nTest Dice Coeficient: {all_dice.mean():.4f}")
+    print(f"\nMin Average Dice in any test Coeficient: {min(class_sep_dice.mean(1)):.4f}")
+    print(f"\nMin Average Dice Coeficient in any class: {min(class_sep_dice.mean(0)):.4f}")
+    print(f"\nMin Dice Coeficient in any test in any class: {min(all_dice):.4f}")
 
     print("All dice scores for all classes and all tests")
     for n in range(len(class_sep_dice)):
         d = class_sep_dice[n]
-        print(f"sample {n}: ave:{d.mean().3f}, back:{d[0]:.3f}, flesh:{d[1]:.3f}, bone:{d[2]:.3f}, bladder:{d[3]:.3f}, anal:{d[4]:.3f}, prostate:{d[5]:.3f}")
+        print(f"sample {n}: ave:{d.mean():.3f}, back:{d[0]:.3f}, flesh:{d[1]:.3f}, bone:{d[2]:.3f}, bladder:{d[3]:.3f}, anal:{d[4]:.3f}, prostate:{d[5]:.3f}")
 
     return avg_dice, all_dice, all_class_dice
 

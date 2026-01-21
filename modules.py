@@ -97,7 +97,7 @@ class DiceLoss(nn.Module):
         """
         # Compute Dice per class
         intersection = torch.sum(pred * target, (0, 2, 3, 4))
-        union = torch.sum(pred + targer, (0, 2, 3, 4))
+        union = torch.sum(pred + target, (0, 2, 3, 4))
 
         dice = (2.0 * intersection + smoothing) / (union + smoothing)
         
